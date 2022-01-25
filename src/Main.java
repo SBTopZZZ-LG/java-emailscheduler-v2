@@ -1,6 +1,6 @@
 import Frames.MainFrame;
 import Frames.SignInFrame;
-import Models.EntryHandler;
+import Utilities.EntryHandler;
 import Utilities.GoogleAuth;
 
 public class Main {

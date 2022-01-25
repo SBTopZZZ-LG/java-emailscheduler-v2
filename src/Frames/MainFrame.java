@@ -1,12 +1,9 @@
 package Frames;
 
 import Models.Entry;
-import Models.EntryHandler;
+import Utilities.EntryHandler;
 import Models.EntryTimer;
-import Utilities.Fonts;
-import Utilities.GoogleAuth;
-import Utilities.RoundedBorder;
-import Utilities.SmartJFrame;
+import Utilities.*;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
@@ -19,7 +16,7 @@ import java.util.List;
 
 abstract class MainFrameCard extends JPanel {
     private final RoundedBorder border = new RoundedBorder();
-    protected final Color hoverColor = Color.decode("#f0f0f0"), defaultColor = Color.decode("#f7f7f7");
+    protected final Color hoverColor = Color.decode("#e0e0e0"), defaultColor = Color.decode("#f0f0f0");
 
     protected void onMouseEvent(boolean inside) {}
 
@@ -99,50 +96,111 @@ class MainFrameNewCard extends MainFrameCard {
     public void initComponents(JPanel parent) {
         components = new MainFrameNewCardComponents();
 
+        // Initialize
         ImageIcon icon = new ImageIcon("res/images/plus.png");
         icon.setImage(icon.getImage().getScaledInstance(50, 50, Image.SCALE_SMOOTH));
         components.title = new JLabel(icon);
 
-        parent.add(components.title, "width 100%, height 100%");
-
+        // Finalize
         parent.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         parent.setToolTipText("Create a New Entry");
+        parent.add(components.title, "width 100%, height 100%");
     }
 }
 
 class MainFrameEntryCardControls extends JPanel {
-    final RoundedBorder border = new RoundedBorder();
-    final JLabel close = new JLabel(new ImageIcon(new ImageIcon("res/images/cancel.png").getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
-    final JLabel edit = new JLabel(new ImageIcon(new ImageIcon("res/images/pencil.png").getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH)));
-    final boolean isPending;
-    final JLabel pending = new JLabel();
+    public interface InteractionListener {
+        void onClose();
+        void onEdit();
+    }
 
-    public MainFrameEntryCardControls(boolean isPending) {
+    protected final RoundedBorder border = new RoundedBorder();
+
+    protected final JLabel close = new JLabel(new ImageIcon(new ImageIcon("res/images/cancel.png").getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH))) {{
+        setVisible(false);
+    }};
+    protected final JLabel edit = new JLabel(new ImageIcon(new ImageIcon("res/images/pencil.png").getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH))) {{
+        setVisible(false);
+    }};
+    protected final JLabel pending = new JLabel();
+
+    protected final boolean isPending;
+
+    public MainFrameEntryCardControls(boolean isPending, InteractionListener listener) {
         this.isPending = isPending;
+
+        // Paint
         setLayout(new MigLayout("fillx, insets 5 10 5 10"));
 
+        // Instantiate
         close.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         close.setToolTipText("Cancel entry");
+        close.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                listener.onClose();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+
         edit.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         edit.setToolTipText("Edit entry");
+        edit.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                listener.onEdit();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+
         pending.setText(isPending ? "Pending" : "Sent");
         pending.setHorizontalAlignment(JLabel.CENTER);
         pending.setForeground(Color.WHITE);
-        pending.setFont(Fonts.getBold().deriveFont(Font.PLAIN, 20));
+        pending.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 20));
+
+        // Finalize
         add(close);
         add(pending, "width 100%");
         if (isPending)
             add(edit);
-    }
-}
-class SmartJPanel extends JPanel {
-    public SmartJPanel(LayoutManager layoutManager) {
-        super(layoutManager);
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        paintChildren(g);
     }
 }
 class MainFrameEntryCardComponents {
@@ -154,12 +212,16 @@ class MainFrameEntryCardComponents {
 }
 class MainFrameEntryCard extends MainFrameCard {
     MainFrameEntryCardComponents components;
-    private Entry entry;
 
-    public MainFrameEntryCard(final Entry entry) {
+    private final Entry entry;
+    private boolean controlsVisible = false;
+    public final MainFrame parent;
+
+    public MainFrameEntryCard(MainFrame parent, Entry entry) {
         super(true);
 
         this.entry = entry;
+        this.parent = parent;
 
         initComponents(this);
     }
@@ -167,29 +229,23 @@ class MainFrameEntryCard extends MainFrameCard {
     @Override
     protected void onMouseEvent(boolean inside) {
         if (inside) {
-            components.body.setText("<html><p style='background: #f0f0f0'>“ " + entry.getBody() + " ”<p></html>");
+            components.body.setText("<html><p style='background: #e0e0e0'>“ " + entry.getBody() + " ”<p></html>");
         } else {
-            components.body.setText("<html><p style='background: #f7f7f7'>“ " + entry.getBody() + " ”<p></html>");
+            components.body.setText("<html><p style='background: #f0f0f0'>“ " + entry.getBody() + " ”<p></html>");
         }
     }
 
     @Override
-    public void initComponents(JPanel parent) {
+    public void initComponents(JPanel parent2) {
         components = new MainFrameEntryCardComponents();
-        components.cardControls = new MainFrameEntryCardControls(entry.isPending());
 
-        components.target.setText("To: " + entry.getRecipientEmail());
-        components.target.setFont(Fonts.getBold().deriveFont(Font.BOLD, 18));
-        components.subject.setText("Subject: " + entry.getSubject());
-        components.subject.setFont(Fonts.getLight().deriveFont(Font.BOLD, 16));
-        components.body.setText("<html><p style='background: #f7f7f7'>“ " + entry.getBody() + " ”<p></html>");
-        components.body.setToolTipText(entry.getBody());
-        components.body.setFont(Fonts.getLight().deriveFont(Font.PLAIN, 16));
-        components.body.setBackground(Color.WHITE);
-        components.body.addMouseListener(getMouseListeners()[0]);
-        components.cardControls.close.addMouseListener(new MouseListener() {
+        // Initialize
+        components.cardControls = new MainFrameEntryCardControls(entry.isPending(), new MainFrameEntryCardControls.InteractionListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void onClose() {
+                if (!components.cardControls.close.isVisible())
+                    return;
+
                 EntryTimer entryTimer = null;
                 for (EntryTimer _entryTimer : EntryHandler.entries)
                     if (_entryTimer.entry == entry) {
@@ -217,6 +273,21 @@ class MainFrameEntryCard extends MainFrameCard {
             }
 
             @Override
+            public void onEdit() {
+                if (!components.cardControls.edit.isVisible())
+                    return;
+
+                EditEntry editEntry = new EditEntry(parent, entry.id);
+                parent.pushNext(editEntry, true);
+            }
+        });
+        components.cardControls.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
             public void mousePressed(MouseEvent e) {
 
             }
@@ -228,126 +299,61 @@ class MainFrameEntryCard extends MainFrameCard {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-
+                if (!controlsVisible) {
+                    components.cardControls.close.setVisible(true);
+                    components.cardControls.edit.setVisible(true);
+                    controlsVisible = true;
+                }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-
+                if (controlsVisible) {
+                    components.cardControls.close.setVisible(false);
+                    components.cardControls.edit.setVisible(false);
+                    controlsVisible = false;
+                }
             }
         });
+        components.cardControls.edit.addMouseListener(components.cardControls.getMouseListeners()[0]);
+
+        components.target.setText("To: " + entry.getRecipientEmail());
+        components.target.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 18));
+
+        components.subject.setText("Subject: " + entry.getSubject());
+        components.subject.setFont(Fonts.getLight().deriveFont(Font.PLAIN, 16));
+
+        components.body.setText("<html><p style='background: #f0f0f0' font-family: Arial>“ " + entry.getBody() + " ”<p></html>");
+        components.body.setToolTipText(entry.getBody());
+        components.body.setFont(Fonts.getLight().deriveFont(Font.PLAIN, 16));
+        components.body.setBackground(Color.WHITE);
+        components.body.addMouseListener(getMouseListeners()[0]);
+
         components.cardControls.border.setBorderColor(Color.lightGray);
         components.cardControls.border.setBorderThickness(0.5f);
         components.cardControls.border.getCorners().clear().bottom();
         components.cardControls.border.setBorderInsets(new Insets(0, 0, 0, 0));
         components.cardControls.border.setBackground(Color.gray);
+
         components.cardControls.setBackground(Color.WHITE);
         components.cardControls.setBorder(components.cardControls.border);
 
         components.bodyContainer.add(components.target, "wrap");
         components.bodyContainer.add(components.subject, "wrap");
         components.bodyContainer.add(components.body, "width 100%, height 100%, wrap");
-        parent.add(components.bodyContainer, "width 100%, height 100%, wrap");
-        parent.add(components.cardControls, "width 100%");
+
+        // Finalize
+        parent2.add(components.bodyContainer, "width 100%, height 100%, wrap");
+        parent2.add(components.cardControls, "width 100%");
     }
 }
 
-class MainFrameLogOutButtonComponents {
-    final JPanel container = new JPanel(new MigLayout("insets 15 15 15 15"));
-    final JLabel text = new JLabel();
-    final JLabel logo = new JLabel(new ImageIcon(new ImageIcon("res/images/logout.png").getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH)));
-}
-class MainFrameLogOutButton extends JPanel {
-    public interface OnClickListener {
-        void onClick(MainFrameLogOutButton button);
-    }
-
-    final MainFrameLogOutButtonComponents components = new MainFrameLogOutButtonComponents();
-    private final Dimension size = new Dimension(80, 25);
-    private final RoundedBorder border = new RoundedBorder();
-    protected final Color hoverColor = Color.decode("#f0f0f0"), defaultColor = Color.decode("#f7f7f7");
-
-    public MainFrameLogOutButton(OnClickListener listener) {
-        setLayout(new BorderLayout());
-        setSize(size);
-
-        components.container.setBackground(Color.WHITE);
-        border.setBorderColor(Color.lightGray);
-        border.setBorderThickness(0);
-        border.setBackground(defaultColor);
-        components.container.setBorder(border);
-        add(components.container, BorderLayout.CENTER);
-
-        components.text.setText("Log out ");
-        components.text.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 18));
-        components.container.add(components.text);
-        components.container.add(components.logo);
-        components.container.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                listener.onClick(MainFrameLogOutButton.this);
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                if (!isEnabled())
-                    return;
-
-                if (border.getBackground() != hoverColor) {
-                    border.setBackground(hoverColor);
-                    components.container.setBorder(null);
-                    components.container.setBorder(border);
-                }
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (!isEnabled())
-                    return;
-
-                if (border.getBackground() != defaultColor) {
-                    border.setBackground(defaultColor);
-                    components.container.setBorder(null);
-                    components.container.setBorder(border);
-                }
-            }
-        });
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (!enabled) {
-            components.text.setForeground(Color.LIGHT_GRAY);
-        } else {
-            components.text.setForeground(Color.BLACK);
-        }
-
-        if (border.getBackground() != defaultColor) {
-            border.setBackground(defaultColor);
-            components.container.setBorder(null);
-            components.container.setBorder(border);
-        }
-
-        super.setEnabled(enabled);
-    }
-}
 class MainFrameComponents {
     final JPanel container = new JPanel(new MigLayout("fill"));
-    final JPanel cards = new JPanel();
+    final JPanel cards = new JPanel(new MigLayout("fill"));
     final JLabel title = new JLabel("Email Scheduler");
-    MainFrameLogOutButton button;
+    SmartJButton logOutButton;
+    SmartJButton sourceCodeButton;
     final JScrollPane scrollPane = new JScrollPane(cards, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
     final List<MainFrameCard> cardObjects = new ArrayList<>();
 }
@@ -364,24 +370,43 @@ public class MainFrame extends SmartJFrame {
 
         // Paint
         setTitle(title);
+        setBackground(Color.WHITE);
         setLayout(new MigLayout("fill, insets 0 0 0 0"));
         setSize(600, 500);
 
-        components.title.setFont(Fonts.getBold().deriveFont(Font.BOLD, 35));
-        components.button = new MainFrameLogOutButton(new MainFrameLogOutButton.OnClickListener() {
+        components.container.setBackground(Color.WHITE);
+
+        components.cards.setBackground(Color.WHITE);
+
+        components.title.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 35));
+        components.container.add(components.title, "width 100%");
+        components.logOutButton = new SmartJButton(MainFrame.this, "Log Out", "res/images/logout.png", SmartJButton.ImageAlignment.RIGHT,
+                new SmartJButton.InteractionListener() {
             @Override
-            public void onClick(MainFrameLogOutButton button) {
+            public void onClick() {
                 try {
                     GoogleAuth.signOut();
                 } catch (Exception e) {}
                 pop();
             }
         });
-        components.container.add(components.title);
-        components.container.add(components.button, "align right, wrap");
-        components.cards.setLayout(new MigLayout("fill"));
+        components.sourceCodeButton = new SmartJButton(MainFrame.this, null, "res/images/github.png", SmartJButton.ImageAlignment.RIGHT,
+                new SmartJButton.InteractionListener() {
+            @Override
+            public void onClick() {
+                try {
+                    java.awt.Desktop.getDesktop().browse(java.net.URI.create("https://github.com/SBTopZZZ-LG/java-emailscheduler-v2.git"));
+                } catch (java.io.IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+        });
+        components.container.add(components.sourceCodeButton);
+        components.container.add(components.logOutButton, "wrap");
 
-        components.container.add(components.scrollPane, "spanx, gapy 20px");
+        components.scrollPane.setBorder(null);
+        components.container.add(components.scrollPane, "grow, span 3, gapy 20px");
+
         loadEntries();
         EntryHandler.callbacks.add(new EntryHandler.Callback() {
             @Override
@@ -389,9 +414,8 @@ public class MainFrame extends SmartJFrame {
                 loadEntries(false);
             }
         });
-        components.cards.setBackground(Color.WHITE);
-        components.scrollPane.setBorder(null);
-        components.container.setBackground(Color.WHITE);
+
+        // Finalize
         add(components.container, "width 100%, height 100%");
     }
 
@@ -432,34 +456,7 @@ public class MainFrame extends SmartJFrame {
         });
         components.cardObjects.add(newCard);
         for (EntryTimer entryTimer : EntryHandler.entries) {
-            MainFrameEntryCard entryCard = new MainFrameEntryCard(entryTimer.entry);
-            entryCard.components.cardControls.edit.addMouseListener(new MouseListener() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    EditEntry editEntry = new EditEntry(MainFrame.this, entryTimer.entry.id);
-                    pushNext(editEntry, true);
-                }
-
-                @Override
-                public void mousePressed(MouseEvent e) {
-
-                }
-
-                @Override
-                public void mouseReleased(MouseEvent e) {
-
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-
-                }
-            });
+            MainFrameEntryCard entryCard = new MainFrameEntryCard(MainFrame.this, entryTimer.entry);
             components.cardObjects.add(entryCard);
         }
         for (MainFrameCard card : components.cardObjects)

@@ -1,10 +1,10 @@
 package Frames;
 
 import Models.Entry;
-import Models.EntryHandler;
+import Utilities.EntryHandler;
 import Models.EntryTimer;
 import Utilities.Fonts;
-import Utilities.HeadButton;
+import Utilities.SmartJButton;
 import Utilities.SmartJFrame;
 import com.github.lgooddatepicker.components.TimePicker;
 import com.github.lgooddatepicker.components.TimePickerSettings;
@@ -21,39 +21,41 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.TimeZone;
 
+class EditEntryHeadComponents {
+    SmartJButton backButton;
+    SmartJButton saveButton;
+}
 class EditEntryHead extends JPanel {
-    // Components
-    private HeadButton backButton;
-    private HeadButton saveButton;
-
-    // Component data
-    private EditEntry parent;
-    private int headSize = 50;
-    private Point headLocation = new Point(0, 0);
     public interface InteractionListener {
         void onBack(EditEntryHead head);
         void onSave(EditEntryHead head);
     }
 
+    private EditEntry parent;
+    private final EditEntryHeadComponents components = new EditEntryHeadComponents();
+
+    private int headSize = 50;
+    private Point headLocation = new Point(0, 0);
+
     public EditEntryHead(EditEntry parent, InteractionListener listener) {
         this.parent = parent;
 
-        // Set properties
+        // Paint
         setSize(parent.getSize().width, headSize);
         setLocation(headLocation.x, headLocation.y);
         setBackground(Color.WHITE);
         setLayout(new MigLayout("insets 5 10 5 10, fillx"));
 
         // Instantiate
-        backButton = new HeadButton(this, "Go Back", "res/images/back.png",
-                new HeadButton.InteractionListener() {
+        components.backButton = new SmartJButton(this, "Go Back", "res/images/back.png", SmartJButton.ImageAlignment.LEFT,
+                new SmartJButton.InteractionListener() {
                     @Override
                     public void onClick() {
                         listener.onBack(EditEntryHead.this);
                     }
                 });
-        saveButton = new HeadButton(this, "Save entry", "res/images/save.png",
-                new HeadButton.InteractionListener() {
+        components.saveButton = new SmartJButton(this, "Save entry", "res/images/save.png", SmartJButton.ImageAlignment.LEFT,
+                new SmartJButton.InteractionListener() {
                     @Override
                     public void onClick() {
                         listener.onSave(EditEntryHead.this);
@@ -61,109 +63,100 @@ class EditEntryHead extends JPanel {
                 });
 
         // Finalize
-        add(backButton, "width 80%");
-        add(saveButton, "width 80%");
+        add(components.backButton, "gapy 10 0, width 80%");
+        add(components.saveButton, "gapy 10 0, width 80%");
     }
 }
 
+class EditEntryBodyComponents {
+    final JPanel recipientEmailPanel = new JPanel(new MigLayout("fillx, insets 0 0 0 0"));
+    final JPanel subjectPanel = new JPanel(new MigLayout("fillx, insets 0 0 0 0"));
+    final JPanel bodyPanel = new JPanel(new MigLayout("fillx, insets 0 0 0 0"));
+    final JPanel schedulePanel = new JPanel(new MigLayout("fillx, insets 0 0 0 0"));
+
+    final JLabel recipientEmail = new JLabel("Recipient's Email >");
+    final JLabel subject = new JLabel("Subject >");
+    final JLabel body = new JLabel("Body of Email >");
+    final JLabel schedule = new JLabel("Schedule at >");
+
+    final JTextField recipientEmailTF = new JTextField();
+    final JTextField subjectTF = new JTextField();
+    final JTextArea bodyTA = new JTextArea();
+
+    final JDatePanelImpl scheduleDate = new JDatePanelImpl(new UtilDateModel(), new Properties() {{
+        put("text.today", "Today");
+        put("text.month", "Month");
+        put("text.year", "Year");
+    }});
+    final TimePicker timePicker = new TimePicker(new TimePickerSettings() {{
+        setColor(TimePickerSettings.TimeArea.TimePickerTextValidTime, Color.black);
+        initialTime = LocalTime.now();
+    }});
+
+    final JScrollPane bodyScroll = new JScrollPane(bodyTA, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+}
 class EditEntryBody extends JPanel {
-    // Components
-    private JPanel recipientEmailPanel;
-    private JPanel subjectPanel;
-    private JPanel bodyPanel;
-    private JPanel schedulePanel;
-
-    private JScrollPane bodyScroll;
-
-    private JLabel recipientEmail;
-    private JLabel subject;
-    private JLabel body;
-    private JLabel schedule;
-
-    JTextField recipientEmailTF;
-    JTextField subjectTF;
-    JTextArea bodyTA;
-
-    JDatePanelImpl scheduleDate;
-    TimePicker timePicker;
-
-    // Component data
     private EditEntry parent;
+    protected final EditEntryBodyComponents components = new EditEntryBodyComponents();
 
     public EditEntryBody(EditEntry parent) {
         this.parent = parent;
 
-        // Instantiate
-        recipientEmailPanel = new JPanel(new MigLayout("fillx, insets 0 0 0 0"));
-        recipientEmail = new JLabel("Recipient's Email Address");
-        recipientEmail.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 15));
-        recipientEmailTF = new JTextField();
-        recipientEmailTF.setBorder(new LineBorder(Color.BLACK, 1, false));
-        recipientEmailPanel.setBackground(Color.WHITE);
-        recipientEmailPanel.add(recipientEmail, "wrap");
-        recipientEmailPanel.add(recipientEmailTF, "span, width 100%");
-
-        subjectPanel = new JPanel(new MigLayout("fillx, insets 0 0 0 0"));
-        subject = new JLabel("Subject");
-        subject.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 15));
-        subjectTF = new JTextField();
-        subjectTF.setBorder(new LineBorder(Color.BLACK, 1, false));
-        subjectTF.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 15));
-        subjectPanel.setBackground(Color.WHITE);
-        subjectPanel.add(subject, "wrap");
-        subjectPanel.add(subjectTF, "span, width 100%");
-
-        bodyPanel = new JPanel(new MigLayout("fillx, insets 0 0 0 0"));
-        body = new JLabel("Body");
-        body.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 15));
-        bodyTA = new JTextArea();
-        bodyTA.setRows(10);
-        bodyTA.setLineWrap(true);
-        bodyTA.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 15));
-        bodyScroll = new JScrollPane(bodyTA, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        bodyPanel.setBackground(Color.WHITE);
-        bodyPanel.add(body, "wrap");
-        bodyPanel.add(bodyScroll, "span, width 100%");
-
-        schedulePanel = new JPanel(new MigLayout("fillx, insets 0 0 0 0"));
-        schedule = new JLabel("Schedule at");
-        schedule.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 15));
-        schedulePanel.setBackground(Color.WHITE);
-        schedulePanel.add(schedule, "wrap");
-        Properties p = new Properties();
-        p.put("text.today", "Today");
-        p.put("text.month", "Month");
-        p.put("text.year", "Year");
-        scheduleDate = new JDatePanelImpl(new UtilDateModel(), p);
-        schedulePanel.add(scheduleDate, "width 100%, wrap");
-        TimePickerSettings timeSettings = new TimePickerSettings();
-        timeSettings.setColor(TimePickerSettings.TimeArea.TimePickerTextValidTime, Color.black);
-        timeSettings.initialTime = LocalTime.now();
-        timePicker = new TimePicker(timeSettings);
-        schedulePanel.add(timePicker, "width 100%");
-
-        // Set properties
+        // Paint
         setLayout(new MigLayout("fillx, insets 15 15 15 15"));
         setBackground(Color.WHITE);
 
+        // Instantiate
+        components.recipientEmail.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 16));
+        components.recipientEmailTF.setBorder(new LineBorder(Color.BLACK, 1, false));
+        components.recipientEmailTF.setFont(Fonts.getLight().deriveFont(Font.PLAIN, 15));
+        components.recipientEmailPanel.setBackground(Color.WHITE);
+        components.recipientEmailPanel.add(components.recipientEmail, "wrap");
+        components.recipientEmailPanel.add(components.recipientEmailTF, "span, width 100%");
+
+        components.subject.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 16));
+        components.subjectTF.setBorder(new LineBorder(Color.BLACK, 1, false));
+        components.subjectTF.setFont(Fonts.getLight().deriveFont(Font.PLAIN, 15));
+        components.subjectPanel.setBackground(Color.WHITE);
+        components.subjectPanel.add(components.subject, "wrap");
+        components.subjectPanel.add(components.subjectTF, "span, width 100%");
+
+        components.body.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 16));
+        components.bodyTA.setRows(10);
+        components.bodyTA.setLineWrap(true);
+        components.bodyTA.setFont(Fonts.getLight().deriveFont(Font.PLAIN, 15));
+        components.bodyPanel.setBackground(Color.WHITE);
+        components.bodyPanel.add(components.body, "wrap");
+        components.bodyPanel.add(components.bodyScroll, "span, width 100%");
+
+        components.schedule.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 16));
+        components.schedulePanel.setBackground(Color.WHITE);
+        components.schedulePanel.add(components.schedule, "wrap");
+
+        components.schedulePanel.add(components.scheduleDate, "width 100%, wrap");
+
+        components.timePicker.setFont(Fonts.getLight().deriveFont(Font.PLAIN, 15));
+        components.schedulePanel.add(components.timePicker, "width 100%");
+
         // Finalize
-        add(recipientEmailPanel, "gapy 0 10, width 100%, wrap");
-        add(subjectPanel, "gapy 0 10, width 100%, wrap");
-        add(bodyPanel, "gapy 0 10, width 100%, wrap");
-        add(schedulePanel, "width 100%");
+        add(components.recipientEmailPanel, "gapy 0 10, width 100%, wrap");
+        add(components.subjectPanel, "gapy 0 10, width 100%, wrap");
+        add(components.bodyPanel, "gapy 0 10, width 100%, wrap");
+        add(components.schedulePanel, "width 100%");
     }
 }
 
+class EditEntryComponents {
+    EditEntryHead head;
+    EditEntryBody body;
+}
 public class EditEntry extends SmartJFrame {
-    // Components
-    private EditEntryHead head;
-    private EditEntryBody body;
-
-    // Component data
     private Entry currentEntry;
-    private Dimension frameSize = new Dimension(500, 700);
+    private final EditEntryComponents components = new EditEntryComponents();
+
+    private final Dimension frameSize = new Dimension(500, 700);
     private Point startLocation;
-    private final String startTitle = "Email Scheduler - Edit Entry";
+    public final String startTitle = "Email Scheduler - Edit Entry";
 
     public EditEntry(MainFrame previous, String id) {
         super(previous);
@@ -174,27 +167,35 @@ public class EditEntry extends SmartJFrame {
                 break;
             }
 
+        // Paint
+        setLayout(new BorderLayout());
+        setTitle(startTitle);
+        setBackground(Color.WHITE);
+        pack();
+        setSize(frameSize);
+        Dimension screenDims = Toolkit.getDefaultToolkit().getScreenSize();
+        startLocation = new Point(screenDims.width / 2 - frameSize.width / 2, screenDims.height / 2 - frameSize.width / 2);
+        setLocation(startLocation.x, startLocation.y);
+
         // Instantiate
-        head = new EditEntryHead(this, new EditEntryHead.InteractionListener() {
+        components.head = new EditEntryHead(this, new EditEntryHead.InteractionListener() {
             @Override
             public void onBack(EditEntryHead head) {
-                // Display previous window then dispose current one
-                previous.display();
-                dispose();
+                pop();
             }
 
             @Override
             public void onSave(EditEntryHead head) {
                 // Validate input
-                if (body.recipientEmailTF.getText().length() == 0 || body.subjectTF.getText().length() == 0 ||
-                        body.bodyTA.getText().length() == 0 || !body.scheduleDate.getModel().isSelected()) {
+                if (components.body.components.recipientEmailTF.getText().length() == 0 || components.body.components.subjectTF.getText().length() == 0 ||
+                        components.body.components.bodyTA.getText().length() == 0 || !components.body.components.scheduleDate.getModel().isSelected()) {
                     JOptionPane.showMessageDialog(EditEntry.this,
                             "Please fill all the fields before editing the entry.",
                             "Warning",
                             JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                if (!body.recipientEmailTF.getText().matches("[a-z0-9._]+@[a-z0-9._]+")) {
+                if (!components.body.components.recipientEmailTF.getText().matches("[a-z0-9._]+@[a-z0-9._]+")) {
                     JOptionPane.showMessageDialog(EditEntry.this,
                             "Enter a valid email address.",
                             "Warning",
@@ -206,9 +207,9 @@ public class EditEntry extends SmartJFrame {
 
                 Calendar scheduleDateSelected = Calendar.getInstance();
                 scheduleDateSelected.setTimeZone(TimeZone.getDefault());
-                scheduleDateSelected.setTime(((UtilDateModel) body.scheduleDate.getModel()).getValue());
-                scheduleDateSelected.set(Calendar.HOUR_OF_DAY, body.timePicker.getTime().getHour());
-                scheduleDateSelected.set(Calendar.MINUTE, body.timePicker.getTime().getMinute());
+                scheduleDateSelected.setTime(((UtilDateModel) components.body.components.scheduleDate.getModel()).getValue());
+                scheduleDateSelected.set(Calendar.HOUR_OF_DAY, components.body.components.timePicker.getTime().getHour());
+                scheduleDateSelected.set(Calendar.MINUTE, components.body.components.timePicker.getTime().getMinute());
                 scheduleDateSelected.set(Calendar.SECOND, 0);
 
                 Calendar temp = Calendar.getInstance();
@@ -225,9 +226,9 @@ public class EditEntry extends SmartJFrame {
                     return;
                 }
 
-                currentEntry.setRecipientEmail(body.recipientEmailTF.getText());
-                currentEntry.setSubject(body.subjectTF.getText());
-                currentEntry.setBody(body.bodyTA.getText());
+                currentEntry.setRecipientEmail(components.body.components.recipientEmailTF.getText());
+                currentEntry.setSubject(components.body.components.subjectTF.getText());
+                currentEntry.setBody(components.body.components.bodyTA.getText());
 
                 currentEntry.setSchedule(scheduleDateSelected.getTimeInMillis());
                 currentEntry.setPendingStatus(true);
@@ -248,29 +249,19 @@ public class EditEntry extends SmartJFrame {
                 dispose();
             }
         });
-        body = new EditEntryBody(this);
-
-        // Set frame properties
-        setLayout(new BorderLayout());
-        setTitle(startTitle);
-        setBackground(Color.WHITE);
-        pack();
-        setLocationRelativeTo(null); // Sets position to center
-        setSize(frameSize);
-        Dimension screenDims = Toolkit.getDefaultToolkit().getScreenSize();
-        startLocation = new Point(screenDims.width / 2 - frameSize.width / 2, screenDims.height / 2 - frameSize.width / 2);
-        setLocation(startLocation.x, startLocation.y);
+        components.body = new EditEntryBody(this);
 
         // Set entry details
-        body.recipientEmailTF.setText(currentEntry.getRecipientEmail());
-        body.subjectTF.setText(currentEntry.getSubject());
-        body.bodyTA.setText(currentEntry.getBody());
-        ((UtilDateModel) body.scheduleDate.getModel()).setValue(new Date(currentEntry.getSchedule()));
+        components.body.components.recipientEmailTF.setText(currentEntry.getRecipientEmail());
+        components.body.components.subjectTF.setText(currentEntry.getSubject());
+        components.body.components.bodyTA.setText(currentEntry.getBody());
+        ((UtilDateModel) components.body.components.scheduleDate.getModel()).setValue(new Date(currentEntry.getSchedule()));
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date(currentEntry.getSchedule()));
-        body.timePicker.setTime(LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)));
+        components.body.components.timePicker.setTime(LocalTime.of(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE)));
 
-        add(head, BorderLayout.PAGE_START);
-        add(body, BorderLayout.CENTER);
+        // Finalize
+        add(components.head, BorderLayout.PAGE_START);
+        add(components.body, BorderLayout.CENTER);
     }
 }

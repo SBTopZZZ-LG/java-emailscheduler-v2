@@ -1,6 +1,7 @@
-package Models;
+package Utilities;
 
-import Utilities.GoogleAuth;
+import Models.Entry;
+import Models.EntryTimer;
 import com.cedarsoftware.util.io.JsonObject;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
