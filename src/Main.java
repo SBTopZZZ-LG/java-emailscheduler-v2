@@ -15,13 +15,13 @@ public class Main {
         // Check if already authenticated
         if (GoogleAuth.isAuthenticated()) {
             // Validate auth
-            MainFrame mainFrame = new MainFrame(frame);
             GoogleAuth.init(new GoogleAuth.Listener() {
                 @Override
                 public void onSuccess() {
                     System.out.println("Success");
                     // Directly start Mainframe
-                    frame.pushNext(mainFrame, false);
+                    MainFrame mainFrame = new MainFrame();
+                    mainFrame.display();
                 }
 
                 @Override

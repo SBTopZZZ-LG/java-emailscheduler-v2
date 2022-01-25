@@ -62,8 +62,8 @@ public class SignInFrame extends SmartJFrame {
                             public void onSuccess() {
                                 components.signIn.setEnabled(true);
 
-                                MainFrame mainFrame = new MainFrame(SignInFrame.this);
-                                pushNext(mainFrame, false);
+                                MainFrame mainFrame = new MainFrame();
+                                pushNextReplacement(mainFrame);
                             }
 
                             @Override

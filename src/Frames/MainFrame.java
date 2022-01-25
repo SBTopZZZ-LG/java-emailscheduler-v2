@@ -361,8 +361,8 @@ public class MainFrame extends SmartJFrame {
     MainFrameComponents components;
     public final String title = "Email Scheduler - Dashboard";
 
-    public MainFrame(SmartJFrame previous) {
-        super(previous);
+    public MainFrame() {
+        super(null);
         components = new MainFrameComponents();
 
         // Init entry
@@ -387,7 +387,9 @@ public class MainFrame extends SmartJFrame {
                 try {
                     GoogleAuth.signOut();
                 } catch (Exception e) {}
-                pop();
+
+                SignInFrame signInFrame = new SignInFrame();
+                pushNextReplacement(signInFrame);
             }
         });
         components.sourceCodeButton = new SmartJButton(MainFrame.this, null, "res/images/github.png", SmartJButton.ImageAlignment.RIGHT,

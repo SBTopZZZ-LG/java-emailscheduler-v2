@@ -74,6 +74,11 @@ public abstract class SmartJFrame extends JFrame {
             jFrame.display();
         }
     }
+    public void pushNextReplacement(SmartJFrame jFrame) {
+        // Dispose current frame and push
+        jFrame.display();
+        dispose();
+    }
     public void pop() {
         if (onClose(null))
             dispose();
