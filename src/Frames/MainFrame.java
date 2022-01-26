@@ -316,6 +316,7 @@ class MainFrameEntryCard extends MainFrameCard {
             }
         });
         components.cardControls.edit.addMouseListener(components.cardControls.getMouseListeners()[0]);
+        components.cardControls.close.addMouseListener(components.cardControls.getMouseListeners()[0]);
 
         components.target.setText("To: " + entry.getRecipientEmail());
         components.target.setFont(Fonts.getRegular().deriveFont(Font.PLAIN, 18));
