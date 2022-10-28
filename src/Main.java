@@ -3,8 +3,20 @@ import Frames.SignInFrame;
 import Utilities.EntryHandler;
 import Utilities.GoogleAuth;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 public class Main {
     public static void main(String[] args) {
+        if (!Files.exists(Path.of(GoogleAuth.TOKENS_DIRECTORY_PATH + "/"))) {
+            try {
+                Files.createDirectories(Path.of(GoogleAuth.TOKENS_DIRECTORY_PATH + "/"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         try {
             EntryHandler.initialize();
         } catch (Exception e) {

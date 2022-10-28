@@ -31,12 +31,12 @@ public class GoogleAuth {
         void onFailure(Exception e);
     }
 
-    private static final String APPLICATION_NAME = "Email Scheduler";
+    public static final String APPLICATION_NAME = "Email Scheduler";
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "res/secrets/tokens";
+    public static final String TOKENS_DIRECTORY_PATH = "res/secrets/tokens";
 
     private static final List<String> SCOPES = List.of(GmailScopes.GMAIL_MODIFY);
-    private static final String CREDENTIALS_FILE_PATH = "res/secrets/google_credentials.json";
+    public static final String CREDENTIALS_FILE_PATH = "res/secrets/google_credentials.json";
 
     private static Gmail service;
 
@@ -110,6 +110,7 @@ public class GoogleAuth {
             System.out.println("Success");
         } catch (Exception e) {
             listener.onFailure(e);
+            e.printStackTrace();
             return;
         }
 
